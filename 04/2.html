@@ -1,0 +1,129 @@
+<script src="../lib/fx.js"></script>
+
+<script>
+  const products = [
+    { name: '반팔티', price: 15000 },
+    { name: '긴팔티', price: 25000 },
+    { name: '패딩', price: 35000 },
+    { name: '후드', price: 12000 },
+    { name: '정장', price: 150000 },
+  ]
+  const add = (a, b) => a + b
+  // 1
+  log(
+    reduce(
+      add,
+      map(
+        (p) => p.price,
+        filter((p) => p.price < 20000, products)
+      )
+    )
+  )
+  // 2
+  log(
+    reduce(
+      add,
+      filter(
+        (n) => n < 20000,
+        map((p) => p.price, products)
+      )
+    )
+  )
+  console.clear()
+</script>
+
+<!--
+  함수형 프로그래밍의 사고방식은 algorithm이 생각난다.
+  앞의 함수에 넣을 값을 코드로 넣는다.
+  코드로 값을 만들어서, 평가하는 시점을 자유롭게 하여
+  코드의 표현력을 높일 수 있다.
+ -->
+
+<!--
+   # 코드를 값으로 다루어 표현력 높이기
+   ## go, pipe
+   ### go: 인자들을 하나의 값으로 만들어가는, 축약하는 함수. 즉시 함수들과 인자를 전달해서 어떤 값을 평가하는데에 사용
+   ### pipe: go와 다르게 함수를 리턴한다. 함수들을 나열한 함수를 리턴한다.
+  -->
+
+<script>
+  const go = (...args) => reduce((a, f) => f(a), args)
+
+  const pipe =
+    (f, ...fs) =>
+    (...as) =>
+      go(f(...as), ...fs)
+
+  go(
+    add(0, 1),
+    (a) => a + 10,
+    (a) => a + 100,
+    log
+  )
+  // 111
+
+  const f = pipe(
+    (a, b) => a + b,
+    (a) => a + 10,
+    (a) => a + 100
+  )
+  log(f(0, 1))
+  console.clear()
+</script>
+
+<script>
+  go(
+    products,
+    (products) => filter((p) => p.price < 20000, products),
+    (products) => map((p) => p.price, products),
+    (prices) => reduce(add, prices),
+    log
+  )
+
+  go(
+    products,
+    filter((p) => p.price < 20000),
+    map((p) => p.price),
+    reduce(add),
+    log
+  )
+  // console.clear()
+</script>
+
+<!--
+  curry: 받았던 함수를 자신이 원하는 시점에 평가시키는 함수
+  - 함수와 인자를 받아서 자신이 원하는 인자가 될 때 결과를 리턴
+ -->
+
+<script>
+  const mult = curry((a, b) => a * b)
+  const mult3 = mult(3)
+
+  log(mult3(10))
+  log(mult3(5))
+  log(mult3(13))
+  console.clear()
+</script>
+
+<!--
+  함수 조합으로 함수 만들기
+ -->
+
+<script>
+  const total_price = pipe(
+    map((p) => p.price),
+    reduce(add)
+  )
+  const base_total_price = (predi) => pipe(filter(predi), total_price)
+  go(
+    products,
+    base_total_price((p) => p.price < 20000),
+    log
+  )
+
+  go(
+    products,
+    base_total_price((p) => p.price >= 20000),
+    log
+  )
+</script>

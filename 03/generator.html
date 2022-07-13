@@ -1,0 +1,76 @@
+<script>
+  const log = console.log
+</script>
+
+<!--
+
+# 제너레이터/이터레이터
+- 제너레이터: 이터레이터이자 이터러블을 생성하는 함수
+
+ -->
+
+<script>
+  function* gen() {
+    yield 1
+    if (false) yield 2
+    yield 3
+    return 100 // done이 true가 되어야 나오는 값. 순회의 경우에는 찍히지 않는다.
+  }
+  let it = gen()
+  // 심볼 이터레이터의 실행 결과는 자기 자신
+  // log(it[Symbol.iterator]() === it)
+  // log(it.next())
+  // log(it.next())
+  // log(it.next())
+  // log(it.next())
+
+  // for (const a of gen()) log(a)
+</script>
+
+<!--
+  # odds
+ -->
+
+<script>
+  function* infinity(i = 0) {
+    while (true) yield i++
+  }
+  function* limit(l, iter) {
+    for (const a of iter) {
+      yield a
+      if (a == l) return
+    }
+  }
+  function* odds(n) {
+    for (const a of limit(n, infinity(1))) {
+      if (a % 2) yield a
+    }
+  }
+  let it2 = odds(10)
+  log(it2.next())
+  log(it2.next())
+  log(it2.next())
+  log(it2.next())
+  log(it2.next())
+  log(it2.next())
+  log(it2.next())
+  for (const a of odds(40)) log(a)
+  console.clear()
+</script>
+
+<!--
+
+  # for of, 전개연산자, 구조분해, 나머지 연산자
+
+ -->
+
+<script>
+  log(...odds(10))
+
+  const [head, ...tail] = odds(5)
+  log(head)
+  log(tail)
+
+  const [a, b, ...rest] = odds(10)
+  log(rest)
+</script>
