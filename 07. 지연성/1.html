@@ -1,0 +1,97 @@
+<script src="../lib/fx.js"></script>
+
+<!--
+  range
+ -->
+<script>
+  const range = (l) => {
+    let i = -1
+    let res = []
+    while (++i < l) {
+      res.push(i)
+    }
+    return res
+  }
+
+  // log(range(5))
+  //  [0, 1, 2, 3, 4]
+
+  let list = range(4)
+  // log(list)
+  // log(reduce(add, list))
+</script>
+
+<!--
+  느긋한 L.range
+ -->
+<script>
+  const L = {}
+  L.range = function* (l) {
+    let i = -1
+    while (++i < l) {
+      yield i
+    }
+  }
+
+  //  [0, 1, 2, 3, 4]
+
+  let list2 = L.range(4)
+  // log(list2.next())
+  // log(reduce(add, list2), 'reduced L.range')
+</script>
+
+<!--
+  range vs L.range
+
+  사실 JS에서 배열을 사용할 때에 연산이 완벽히 완료되어야만 사용자가 필요한 값을 뽑아내는 기능이 동작하는 것은 아니다.
+  var a = [1, 2, 3]
+  a[0] = 1
+  a[2] = 3
+  위의 경우 배열 평가가 완벽히 이루어지지 않았다. 그럴 필요가 없기 때문이다.
+
+  그냥 range는 실행하는 순간 모든 코드가 평가가 되어 순회가 진행되고,
+  L.range의 경우에는 아직 평가되지 않고- 배열을 굳이 만들지 않고 -기다리며, 필요한 경우 값을 하나씩 꺼낸다는 차이가 있다.
+
+  즉,
+  range는 array를 만들고 -> array를 iterator로 만들고 순회한다.
+  L.range는 iterator를 만들고 자기 자신을 바로 리턴하는 iterable이기 때문에, 해당 함수를 실행하면 이미 만든 iterator를 리턴하고 실행만 하기 때문에 더 효율적이다.
+ -->
+
+<!--
+  효율성을 체크해 보자
+ -->
+
+<script>
+  function test(name, time, f) {
+    console.time(name)
+    while (time--) f()
+    console.timeEnd(name)
+  }
+  // test('range', 10, () => reduce(add, range(1000000)))
+  // test('L.range', 10, () => reduce(add, L.range(1000000)))
+  console.clear()
+</script>
+
+<!--
+  take
+ -->
+
+<script>
+  const take = curry((l, iter) => {
+    let res = []
+    for (const a of iter) {
+      res.push(a)
+      if (res.length == l) return res
+    }
+    return res
+  })
+
+  console.time('')
+  go(range(10000), take(5), reduce(add), log)
+  console.timeEnd('')
+
+  // 지연성의 효율
+  console.time('')
+  go(L.range(10000), take(5), reduce(add), log)
+  console.timeEnd('')
+</script>
