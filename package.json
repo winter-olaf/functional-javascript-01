@@ -1,0 +1,33 @@
+{
+  "name": "functional-javascript-01",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "directories": {
+    "lib": "lib"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/engcraft1102/functional-javascript-01.git"
+  },
+  "author": "engcraft1102",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/engcraft1102/functional-javascript-01/issues"
+  },
+  "homepage": "https://github.com/engcraft1102/functional-javascript-01#readme",
+  "prettier": {
+    "tabWidth": 2,
+    "useTabs": false,
+    "endOfLine": "lf",
+    "printWidth": 80,
+    "semi": false,
+    "singleQuote": true
+  },
+  "devDependencies": {
+    "prettier": "2.7.1"
+  }
+}
