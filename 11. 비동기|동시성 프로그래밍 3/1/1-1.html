@@ -1,0 +1,189 @@
+<script src="../fx.js"></script>
+
+## async/await
+
+<script>
+  function delay(time) {
+    return new Promise((resolve) => setTimeout(() => resolve(), time));
+  }
+
+  async function delayIdentity(a) {
+    await delay(10);
+    return a;
+  }
+
+  async function f1() {
+    const a = await delayIdentity(10);
+    const b = await delayIdentity(5);
+    return a + b;
+  }
+  // f1()
+  // ;(async () => {
+  //   log(await f1())
+  // })()
+
+  // const pa = Promise.resolve(10);
+  const pa = f1();
+
+  // (async () => {
+  //   log(await pa);
+  // })();
+  console.clear();
+</script>
+
+## QnA. Array.prototype.map이 있는데 왜 FxJS의 map 함수가 필요한지?
+
+<script>
+  async function delayI(a) {
+    return new Promise((resolve) => setTimeout(() => resolve(a), 500));
+  }
+
+  // function f2() {
+  //   const list = [1, 2, 3, 4];
+  //   const res = list.map(async (a) => await delayI(a * a));
+  //   log(res);
+  // }
+  // f2();
+
+  async function f3() {
+    const list = [1, 2, 3, 4];
+    const res = await map((a) => delayI(a * a), list);
+    log(res);
+    return res;
+  }
+
+  const f4 = () => map((a) => delayI(a * a), [1, 2, 3, 4]);
+  const res = f4();
+  // go(f4(), log);
+</script>
+
+## QnA. 이제 비동기는 async/await로 제어할 수 있는데 왜 파이프라인이 필요한지?
+
+<script>
+  // pipeline은 연속적인 함수 실행과 합성을 통해 테스트와 유지보수가 쉬운 로직을 만드는 것이 목적.
+  // async/await는 비동기 상황을 동기적인 문장으로 풀어서 코딩하는 것이 목적.
+  const list = [1, 2, 3, 4, 5, 6, 7, 8];
+  function f5(list) {
+    return go(
+      list,
+      L.map((a) => delayI(a * a)),
+      L.filter((a) => delayI(a % 2)),
+      C.take(3),
+      reduce((a, b) => delayI(a + b))
+    );
+  }
+  // go(f5(list), log);
+
+  async function f6(list) {
+    let temp = [];
+    for (const a of list) {
+      const b = await delayI(a * a);
+      if (await delayI(b % 2)) {
+        const c = await delayI(b + 1);
+        temp.push(c);
+        if (temp.length == 3) break;
+      }
+    }
+    let res = temp[0],
+      i = 0;
+    while (++i < temp.length) {
+      res += await delayI(temp[i]);
+    }
+    return res;
+  }
+  // go(f6(list), log);
+</script>
+
+## QnA. async/await와 파이프라인을 같이 사용하기도 하나요?
+
+<script>
+  async function f52(list) {
+    const r1 = await go(
+      list,
+      L.map((a) => delayI(a * a)),
+      L.filter((a) => delayI(a % 2)),
+      C.take(2),
+      reduce((a, b) => delayI(a + b))
+    );
+    const r2 = await go(
+      list,
+      L.map((a) => delayI(a * a)),
+      L.filter((a) => delayI(a % 2)),
+      reduce((a, b) => delayI(a + b))
+    );
+
+    const r3 = await delayI(r1 + r2);
+    return r3 + 10;
+  }
+  // go(f52(list), log);
+</script>
+
+## QnA. 동기 상황에서 에러 핸들링은 어떻게 해야하는지?
+
+<script>
+  function f7(a = list) {
+    try {
+      return a
+        .map((a) => a * a)
+        .filter((a) => a % 2)
+        .slice(2);
+    } catch (e) {
+      console.error(e);
+      return [];
+    }
+  }
+  // log(f7());
+</script>
+
+## QnA. 비동기 상황에서 에러 핸들링은 어떻게 해야하는지?
+
+<script>
+  // async function f8(list) {
+  //   try {
+  //     return await go(
+  //       list,
+  //       map(
+  //         (a) =>
+  //           new Promise((resolve) => {
+  //             resolve(JSON.parse(a));
+  //           })
+  //       ),
+  //       filter((a) => a % 2),
+  //       take(2)
+  //     );
+  //   } catch (e) {
+  //     console.error(e, '에러 핸들링 중 -----------------');
+  //     return [];
+  //   }
+  // }
+  // go(f8(['0', '1', '{']), log);
+</script>
+
+## QnA. 동기/비동기 에러 핸들링에서의 파이프라인의 이점은?
+<script>
+  async function f9(list) {
+    try {
+      const res = go(
+        list,
+        map(
+          (a) =>
+            new Promise((resolve) => {
+              resolve(JSON.parse(a));
+            })
+        ),
+        filter((a) => a % 2),
+        take(2)
+      );
+      return await res;
+    } catch (e) {
+      console.error(e, 'f9 에러 핸들링 중 -----------------');
+      return [];
+    }
+  }
+  go(
+    f9(['0', '1', '{'])
+      .then((a) => log(a, 'f9'))
+      .catch((e) => log('error handling')),
+    log
+  );
+</script>
